@@ -1,5 +1,5 @@
 {application, lib_conf,
- [{description, "An OTP library"},
+ [{description, "Simple Erlang configuration handler"},
   {vsn, "0.1.0"},
   {registered, []},
   {applications,
@@ -7,9 +7,9 @@
     stdlib
    ]},
   {env,[]},
-  {modules, []},
+  {modules, [lib_conf]},
 
-  {maintainers, []},
+  {maintainers, ["Jorgen Brandt <brandjoe@hu-berlin.de>"]},
   {licenses, []},
   {links, []}
  ]}.
