@@ -1,6 +1,6 @@
 {application, lib_conf,
  [{description, "Simple Erlang configuration handler"},
-  {vsn, "0.1.0"},
+  {vsn, "0.1.0-release"},
   {registered, []},
   {applications,
    [kernel,
