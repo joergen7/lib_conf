@@ -18,6 +18,8 @@
 
 %% @author Jörgen Brandt <brandjoe@hu-berlin.de>
 
+%% @doc Simple Erlang configuration handler.
+
 -module( lib_conf ).
 -author( "Jorgen Brandt <brandjoe@hu-berlin.de>" ).
 
@@ -54,11 +56,7 @@ when is_map( DefaultMap ),
     {ok, B}          ->
 
       % parse the content of ConfFile to get ConfMap
-      {ok, Tokens, _} = erl_scan:string( binary_to_list( B ) ),
-      ConfMap = case erl_parse:parse_term( Tokens ) of
-        {error, Reason2} -> error( Reason2 );
-        {ok, Y}         -> Y
-      end,
+      ConfMap = jsone:decode( B, [{keys, atom}] ),
 
       % create MergeMap by traversing all keys in DefaultMap
       % for each key in DefaultMap if the key exists in ConfMap, use its value
@@ -71,4 +69,5 @@ when is_map( DefaultMap ),
   % for each key in MergeMap if the key exists in ManualMap, use its value
   % if it does not exist in ManualMap, use the MergeMap value instead
   maps:map( fun( K, V ) -> maps:get( K, ManualMap, V ) end, MergeMap ).
+
 
