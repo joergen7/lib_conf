@@ -7,7 +7,7 @@ This library allows the building of complex configuration objects (in the form o
 
 Complex Erlang applications often use large configurations that can be manipulated in several ways. Large configurations make it prohibitive to have the user enumerate all key/value pairs. Rather, a default configuration needs to be updated only in the places appearing in the superseding configuration.
 
-`lib_conf` is a library that allows this style of configuration superseding from five sources:
+`lib_conf` is a library that allows this style of configuration superseding. Herein, five configuration sources are taken into account:
 
 - A default configuration that is used as a basis
 - A global configuration parsed from a JSON file in the file system
