@@ -28,7 +28,7 @@ UserFile   = ".config/my_app/client_conf.json",
 SupplFile  = undefined
 FlagMap    = #{ max_size => 3000 },
 
-lib_conf:create_conf( DefaultMap, GlobalFile, UserFile, SuppFile, FlagMap ).
+lib_conf:create_conf( DefaultMap, GlobalFile, UserFile, SupplFile, FlagMap ).
 ```
 
 In this example we create a default configuration introducing the keys `nthread` and `max_size`. We have not been given a supplement configuration file by the user, thus, setting the corresponding argument to `undefined`. However, the `max_size` parameter has been set on the command line to have the value `3000` instead of the default value `2000`.
