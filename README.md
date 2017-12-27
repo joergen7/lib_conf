@@ -1,3 +1,3 @@
-# lib_conf [![Build Status](https://travis-ci.org/joergen7/lib_conf.svg?branch=dev)](https://travis-ci.org/joergen7/lib_conf)
+# lib_conf [![Build Status](https://travis-ci.org/joergen7/lib_conf.svg?branch=master)](https://travis-ci.org/joergen7/lib_conf)
 
-Simple Erlang configuration handler.
+Simple Erlang configuration handling library.

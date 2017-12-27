@@ -1,8 +1,8 @@
 %% -*- erlang -*-
 %%
-%% Cuneiform: A Functional Language for Large Scale Scientific Data Analysis
+%% Simple Erlang configuration handling library.
 %%
-%% Copyright 2016 Jörgen Brandt, Marc Bux, and Ulf Leser
+%% Copyright 2017 Jörgen Brandt
 %%
 %% Licensed under the Apache License, Version 2.0 (the "License");
 %% you may not use this file except in compliance with the License.
@@ -15,15 +15,20 @@
 %% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 %% See the License for the specific language governing permissions and
 %% limitations under the License.
+%%
+%% -------------------------------------------------------------------
+%% @author Jörgen Brandt <joergen.brandt@onlinehome.de>
+%% @version 0.1.0
+%% @copyright 2017 Jörgen Brandt
+%%
+%% @end
+%% -------------------------------------------------------------------
 
-%% @author Jörgen Brandt <brandjoe@hu-berlin.de>
-
-%% @doc Simple Erlang configuration handler.
 
 -module( lib_conf ).
 -author( "Jorgen Brandt <brandjoe@hu-berlin.de>" ).
 
--export( [create_conf/3] ).
+-export( [create_conf/5] ).
 
 
 %% @doc Creates a map by combining a DefaultMap, a map extracted from a
@@ -34,40 +39,112 @@
 %%      values from the ConfFile and then with the according values from the
 %%      ManualMap.
 
--spec create_conf( DefaultMap, ConfFile, ManualMap ) -> #{ _ => _ }
-when DefaultMap :: #{ _ => _},
-     ConfFile   :: string(),
-     ManualMap  :: #{ _ => _ }.
+-spec create_conf( DefaultMap, GlobalFile, UserFile, SupplFile, FlagMap ) ->
+        #{ atom() => _ }
+when DefaultMap :: #{ atom() => _},
+     GlobalFile :: string(),
+     UserFile   :: string(),
+     SupplFile  :: undefined | string(),
+     FlagMap    :: #{ atom() => _ }.
 
-create_conf( DefaultMap, ConfFile, ManualMap )
+create_conf( DefaultMap, GlobalFile, UserFile, SupplFile, FlagMap )
 when is_map( DefaultMap ),
-     is_list( ConfFile ),
-     is_map( ManualMap ) ->
+     is_list( GlobalFile ),
+     is_list( UserFile ),
+     is_map( FlagMap ) ->
 
-  MergeMap = case file:read_file( ConfFile ) of
+  ConfMap1 =
+    case file:read_file( GlobalFile ) of
 
-    % if ConfFile does not exist use the unchanged DefaultMap
-    {error, enoent}  -> DefaultMap;
+      % if global file does not exist use the unchanged DefaultMap
+      {error, enoent} ->
+        DefaultMap;
 
-    % report any error that is not enoent
-    {error, Reason1} -> error( Reason1 );
+      % report any error that is not enoent
+      {error, Reason1} ->
+        error( Reason1 );
 
-    % ConfFile was successfully read
-    {ok, B}          ->
+      % global file was successfully read
+      {ok, B1} ->
 
-      % parse the content of ConfFile to get ConfMap
-      ConfMap = jsone:decode( B, [{keys, atom}] ),
+        % parse the content of ConfFile to get ConfMap
+        GlobalMap = jsone:decode( B1, [{keys, atom}] ),
 
-      % create MergeMap by traversing all keys in DefaultMap
-      % for each key in DefaultMap if the key exists in ConfMap, use its value
-      % if it does not exist in ConfMap, use the DefaultMap value instead
-      maps:map( fun( K, V ) -> maps:get( K, ConfMap, V ) end, DefaultMap )
-  end,
+        % merge default and global map giving global map precedence
+        merge( DefaultMap, GlobalMap )
+
+    end,
+
+  ConfMap2 =
+    case os:getenv( "HOME" ) of
+
+      false ->
+        error( {env_unset, "HOME"} );
+
+      UserDir ->
+        case file:read_file( string:join( [UserDir, UserFile], "/" ) ) of
+
+          % if user file does not exist use the unchanged DefaultMap
+          {error, enoent} ->
+            ConfMap1;
+
+          % report any error that is not enoent
+          {error, Reason2} ->
+            error( Reason2 );
+
+          % user file was successfully read
+          {ok, B2} ->
+
+            % parse the content of ConfFile to get ConfMap
+            UserMap = jsone:decode( B2, [{keys, atom}] ),
+
+            % merge old map and user map giving user map precedence
+            merge( ConfMap1, UserMap )
+
+        end
+
+    end,
+
+  ConfMap3 =
+    case SupplFile of
+
+      undefined ->
+        ConfMap2;
+
+      File ->
+        case file:read_file( File ) of
+
+          % report any error even if it is enoent
+          {error, Reason3} ->
+            error( Reason3 );
+
+          % supplement file was successfully read
+          {ok, B3} ->
+
+            % parse the content of supplement file to get the supplement map
+            SupplMap = jsone:decode( B3, [{keys, atom}] ),
+
+            % merge old map and supplement map giving supplement map precedence
+            merge( ConfMap2, SupplMap )
+
+        end
+
+    end,
+
+
+  % merge the old map and the flag map to obtain the final configuration
+  merge( ConfMap3, FlagMap ).
 
   
-  % traverse all keys in MergeMap
-  % for each key in MergeMap if the key exists in ManualMap, use its value
-  % if it does not exist in ManualMap, use the MergeMap value instead
-  maps:map( fun( K, V ) -> maps:get( K, ManualMap, V ) end, MergeMap ).
 
 
+
+-spec merge( OldMap :: #{ _ => _ }, NewMap :: #{ _ => _ } ) -> #{ _ => _ }.
+
+merge( OldMap, NewMap ) ->
+
+  F = fun( Key, OldValue ) ->
+        maps:get( Key, NewMap, OldValue )
+      end,
+
+  maps:map( F, OldMap ).

@@ -1,6 +1,6 @@
 {application, lib_conf,
- [{description, "Simple Erlang configuration handler"},
-  {vsn, "0.1.2-snapshot"},
+ [{description, "Simple Erlang configuration handling library."},
+  {vsn, "0.1.2"},
   {registered, []},
   {applications,
    [kernel,
@@ -9,7 +9,9 @@
   {env,[]},
   {modules, [lib_conf]},
 
-  {maintainers, ["Jorgen Brandt <brandjoe@hu-berlin.de>"]},
-  {licenses, []},
-  {links, []}
+  {maintainers, ["Jorgen Brandt"]},
+  {licenses, ["Apache 2.0"]},
+  {links, [
+           {"GitHub", "https://github.com/joergen7/lib_combin/"}
+          ]}
  ]}.
