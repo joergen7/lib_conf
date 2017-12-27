@@ -115,6 +115,9 @@ when is_map( DefaultMap ),
         case file:read_file( File ) of
 
           % report any error even if it is enoent
+          {error, enoent} ->
+            error( {enoent, File} );
+
           {error, Reason3} ->
             error( Reason3 );
 
@@ -137,7 +140,11 @@ when is_map( DefaultMap ),
 
   
 
-
+%% @doc Merges two maps.
+%%
+%% The returned map has all the keys from `OldMap'. Values from `NewMap'
+%% supersede values from `OldMap'. Keys appearing in `NewMap' but not in
+%% `OldMap' are discarded.
 
 -spec merge( OldMap :: #{ _ => _ }, NewMap :: #{ _ => _ } ) -> #{ _ => _ }.
 
