@@ -25,7 +25,7 @@ Example:
 DefaultMap = #{ nthread => 4, max_size => 2000 },
 GlobalFile = "/usr/local/etc/my_app/client_conf.json",
 UserFile   = ".config/my_app/client_conf.json",
-SupplFile  = undefined
+SupplFile  = undefined,
 FlagMap    = #{ max_size => 3000 },
 
 lib_conf:create_conf( DefaultMap, GlobalFile, UserFile, SupplFile, FlagMap ).

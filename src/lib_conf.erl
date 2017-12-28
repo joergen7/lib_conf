@@ -18,7 +18,7 @@
 %%
 %% -------------------------------------------------------------------
 %% @author Jörgen Brandt <joergen.brandt@onlinehome.de>
-%% @version 0.1.0
+%% @version 0.1.3
 %% @copyright 2017 Jörgen Brandt
 %%
 %% @end
@@ -62,7 +62,7 @@ when is_map( DefaultMap ),
 
       % report any error that is not enoent
       {error, Reason1} ->
-        error( Reason1 );
+        error( {Reason1, GlobalFile} );
 
       % global file was successfully read
       {ok, B1} ->
@@ -82,7 +82,8 @@ when is_map( DefaultMap ),
         error( {env_unset, "HOME"} );
 
       UserDir ->
-        case file:read_file( string:join( [UserDir, UserFile], "/" ) ) of
+        File = string:join( [UserDir, UserFile], "/" ),
+        case file:read_file( File ) of
 
           % if user file does not exist use the unchanged DefaultMap
           {error, enoent} ->
@@ -90,7 +91,7 @@ when is_map( DefaultMap ),
 
           % report any error that is not enoent
           {error, Reason2} ->
-            error( Reason2 );
+            error( {Reason2, File} );
 
           % user file was successfully read
           {ok, B2} ->
@@ -115,11 +116,8 @@ when is_map( DefaultMap ),
         case file:read_file( File ) of
 
           % report any error even if it is enoent
-          {error, enoent} ->
-            error( {enoent, File} );
-
           {error, Reason3} ->
-            error( Reason3 );
+            error( {Reason3, File} );
 
           % supplement file was successfully read
           {ok, B3} ->
