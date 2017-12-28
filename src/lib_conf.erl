@@ -82,8 +82,8 @@ when is_map( DefaultMap ),
         error( {env_unset, "HOME"} );
 
       UserDir ->
-        File = string:join( [UserDir, UserFile], "/" ),
-        case file:read_file( File ) of
+        File1 = string:join( [UserDir, UserFile], "/" ),
+        case file:read_file( File1 ) of
 
           % if user file does not exist use the unchanged DefaultMap
           {error, enoent} ->
@@ -91,7 +91,7 @@ when is_map( DefaultMap ),
 
           % report any error that is not enoent
           {error, Reason2} ->
-            error( {Reason2, File} );
+            error( {Reason2, File1} );
 
           % user file was successfully read
           {ok, B2} ->
@@ -112,12 +112,12 @@ when is_map( DefaultMap ),
       undefined ->
         ConfMap2;
 
-      File ->
-        case file:read_file( File ) of
+      File2 ->
+        case file:read_file( File2 ) of
 
           % report any error even if it is enoent
           {error, Reason3} ->
-            error( {Reason3, File} );
+            error( {Reason3, File2} );
 
           % supplement file was successfully read
           {ok, B3} ->
