@@ -4,14 +4,10 @@
   {registered, []},
   {applications,
    [kernel,
-    stdlib
-   ]},
-  {env,[]},
+    stdlib]},
+  {env, []},
   {modules, [lib_conf]},
 
   {maintainers, ["Jorgen Brandt"]},
   {licenses, ["Apache 2.0"]},
-  {links, [
-           {"GitHub", "https://github.com/joergen7/lib_conf/"}
-          ]}
- ]}.
+  {links, [{"GitHub", "https://github.com/joergen7/lib_conf/"}]}]}.

@@ -24,11 +24,9 @@
 %% @end
 %% -------------------------------------------------------------------
 
+-module(lib_conf).
 
--module( lib_conf ).
-
--export( [create_conf/5] ).
-
+-export([create_conf/5]).
 
 %% @doc Creates a map by combining a DefaultMap, a map extracted from a
 %%      ConfigFile, and a ManualMap.
@@ -38,121 +36,120 @@
 %%      values from the ConfFile and then with the according values from the
 %%      ManualMap.
 
--spec create_conf( DefaultMap, GlobalFile, UserFile, SupplFile, FlagMap ) ->
-        #{ atom() => _ }
-when DefaultMap :: #{ atom() => _},
-     GlobalFile :: undefined | string(),
-     UserFile   :: undefined | string(),
-     SupplFile  :: undefined | string(),
-     FlagMap    :: #{ atom() => _ }.
 
-create_conf( DefaultMap, GlobalFile, UserFile, SupplFile, FlagMap )
-when is_map( DefaultMap ),
-     is_list( GlobalFile ) orelse GlobalFile =:= undefined,
-     is_list( UserFile ) orelse UserFile =:= undefined,
-     is_list( SupplFile ) orelse SupplFile =:= undefined,
-     is_map( FlagMap ) ->
+-spec create_conf(DefaultMap, GlobalFile, UserFile, SupplFile, FlagMap) ->
+          #{atom() => _}
+              when DefaultMap :: #{atom() => _},
+                   GlobalFile :: undefined | string(),
+                   UserFile :: undefined | string(),
+                   SupplFile :: undefined | string(),
+                   FlagMap :: #{atom() => _}.
 
-  ConfMap1 =
-    case GlobalFile of
+create_conf(DefaultMap, GlobalFile, UserFile, SupplFile, FlagMap)
+  when is_map(DefaultMap),
+       is_list(GlobalFile) orelse GlobalFile =:= undefined,
+       is_list(UserFile) orelse UserFile =:= undefined,
+       is_list(SupplFile) orelse SupplFile =:= undefined,
+       is_map(FlagMap) ->
 
-      undefined ->
-        DefaultMap;
+    ConfMap1 =
+        case GlobalFile of
 
-      _ ->
-        case file:read_file( GlobalFile ) of
+            undefined ->
+                DefaultMap;
 
-          % if global file does not exist use the unchanged DefaultMap
-          {error, enoent} ->
-            DefaultMap;
+            _ ->
+                case file:read_file(GlobalFile) of
 
-          % report any error that is not enoent
-          {error, Reason1} ->
-            error( {Reason1, GlobalFile} );
+                    % if global file does not exist use the unchanged DefaultMap
+                    {error, enoent} ->
+                        DefaultMap;
 
-          % global file was successfully read
-          {ok, B1} ->
+                    % report any error that is not enoent
+                    {error, Reason1} ->
+                        error({Reason1, GlobalFile});
 
-            % parse the content of ConfFile to get ConfMap
-            GlobalMap = jsone:decode( B1, [{keys, atom}] ),
+                    % global file was successfully read
+                    {ok, B1} ->
 
-            % merge default and global map giving global map precedence
-            merge( DefaultMap, GlobalMap )
+                        % parse the content of ConfFile to get ConfMap
+                        GlobalMap = jsone:decode(B1, [{keys, atom}]),
 
-        end
+                        % merge default and global map giving global map precedence
+                        merge(DefaultMap, GlobalMap)
 
-    end,
+                end
 
-  ConfMap2 =
-    case UserFile of
+        end,
 
-      undefined ->
-        ConfMap1;
+    ConfMap2 =
+        case UserFile of
 
-      _ ->
-        case os:getenv( "HOME" ) of
-
-          false ->
-            error( {env_unset, "HOME"} );
-
-          UserDir ->
-            File1 = string:join( [UserDir, UserFile], "/" ),
-            case file:read_file( File1 ) of
-
-              % if user file does not exist use the unchanged DefaultMap
-              {error, enoent} ->
+            undefined ->
                 ConfMap1;
 
-              % report any error that is not enoent
-              {error, Reason2} ->
-                error( {Reason2, File1} );
+            _ ->
+                case os:getenv("HOME") of
 
-              % user file was successfully read
-              {ok, B2} ->
+                    false ->
+                        error({env_unset, "HOME"});
 
-                % parse the content of ConfFile to get ConfMap
-                UserMap = jsone:decode( B2, [{keys, atom}] ),
+                    UserDir ->
+                        File1 = string:join([UserDir, UserFile], "/"),
+                        case file:read_file(File1) of
 
-                % merge old map and user map giving user map precedence
-                merge( ConfMap1, UserMap )
+                            % if user file does not exist use the unchanged DefaultMap
+                            {error, enoent} ->
+                                ConfMap1;
 
-            end
+                            % report any error that is not enoent
+                            {error, Reason2} ->
+                                error({Reason2, File1});
 
-        end
+                            % user file was successfully read
+                            {ok, B2} ->
 
-    end,
+                                % parse the content of ConfFile to get ConfMap
+                                UserMap = jsone:decode(B2, [{keys, atom}]),
 
-  ConfMap3 =
-    case SupplFile of
+                                % merge old map and user map giving user map precedence
+                                merge(ConfMap1, UserMap)
 
-      undefined ->
-        ConfMap2;
+                        end
 
-      _ ->
-        case file:read_file( SupplFile ) of
+                end
 
-          % report any error even if it is enoent
-          {error, Reason3} ->
-            error( {Reason3, SupplFile} );
+        end,
 
-          % supplement file was successfully read
-          {ok, B3} ->
+    ConfMap3 =
+        case SupplFile of
 
-            % parse the content of supplement file to get the supplement map
-            SupplMap = jsone:decode( B3, [{keys, atom}] ),
+            undefined ->
+                ConfMap2;
 
-            % merge old map and supplement map giving supplement map precedence
-            merge( ConfMap2, SupplMap )
+            _ ->
+                case file:read_file(SupplFile) of
 
-        end
+                    % report any error even if it is enoent
+                    {error, Reason3} ->
+                        error({Reason3, SupplFile});
 
-    end,
+                    % supplement file was successfully read
+                    {ok, B3} ->
 
+                        % parse the content of supplement file to get the supplement map
+                        SupplMap = jsone:decode(B3, [{keys, atom}]),
 
-  % merge the old map and the flag map to obtain the final configuration
-  merge( ConfMap3, FlagMap ).
+                        % merge old map and supplement map giving supplement map precedence
+                        merge(ConfMap2, SupplMap)
 
-  
+                end
+
+        end,
+
+    % merge the old map and the flag map to obtain the final configuration
+    merge(ConfMap3, FlagMap).
+
 
 %% @doc Merges two maps.
 %%
@@ -160,12 +157,13 @@ when is_map( DefaultMap ),
 %% supersede values from `OldMap'. Keys appearing in `NewMap' but not in
 %% `OldMap' are discarded.
 
--spec merge( OldMap :: #{ _ => _ }, NewMap :: #{ _ => _ } ) -> #{ _ => _ }.
 
-merge( OldMap, NewMap ) ->
+-spec merge(OldMap :: #{_ => _}, NewMap :: #{_ => _}) -> #{_ => _}.
 
-  F = fun( Key, OldValue ) ->
-        maps:get( Key, NewMap, OldValue )
-      end,
+merge(OldMap, NewMap) ->
 
-  maps:map( F, OldMap ).
+    F = fun(Key, OldValue) ->
+                maps:get(Key, NewMap, OldValue)
+        end,
+
+    maps:map(F, OldMap).
