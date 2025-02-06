@@ -1,7 +1,7 @@
 # lib_conf
 ###### Simple Erlang configuration handling library.
 
-[![hex.pm](https://img.shields.io/hexpm/v/lib_conf.svg?style=flat)](https://hex.pm/packages/lib_conf) [![Build Status](https://travis-ci.org/joergen7/lib_conf.svg?branch=master)](https://travis-ci.org/joergen7/lib_conf)
+[![hex.pm](https://img.shields.io/hexpm/v/lib_conf.svg?style=flat)](https://hex.pm/packages/lib_conf)
 
 This library allows the building of complex configuration objects (in the form of key/value pairs) from several sources superseding one another.
 
